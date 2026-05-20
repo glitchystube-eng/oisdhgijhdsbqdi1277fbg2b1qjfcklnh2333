@@ -1,0 +1,595 @@
+cat > /mnt/user-data/outputs/corruption-hub.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corruption Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a08; --surface: #111110; --surface2: #1a1a18;
+    --border: rgba(255,255,255,0.07); --text: #f0ede6; --muted: #6b6960;
+    --accent: #e8f53a; --accent-dim: rgba(232,245,58,0.12);
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 999; opacity: 0.4;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; z-index: 998;
+  }
+  header {
+    padding: 60px 40px 40px; display: flex; align-items: flex-end;
+    justify-content: space-between; border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: 'HUB'; position: absolute; right: -10px; top: -30px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 260px;
+    color: rgba(255,255,255,0.02); line-height: 1; pointer-events: none; letter-spacing: -4px;
+  }
+  .logo-block h1 { font-family: 'Bebas Neue', sans-serif; font-size: 88px; letter-spacing: 4px; line-height: 0.9; color: var(--text); }
+  .logo-block h1 span { color: var(--accent); }
+  .logo-block p { font-size: 11px; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 10px; }
+  .count-badge { display: inline-block; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 6px 14px; border-radius: 2px; }
+  .section-row { display: flex; align-items: center; gap: 16px; padding: 40px 40px 20px; }
+  .section-row .label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .section-row .line { flex: 1; height: 1px; background: var(--border); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: var(--border); margin: 0 40px; border: 1px solid var(--border); }
+  .card { background: var(--surface); position: relative; overflow: hidden; transition: background 0.2s; }
+  .card:hover { background: var(--surface2); }
+  .card:hover .card-overlay { opacity: 1; }
+  .card:hover .media-wrap img, .card:hover .media-wrap video { transform: scale(1.03); filter: brightness(0.7); }
+  .media-wrap { width: 100%; height: 180px; overflow: hidden; background: #0d0d0b; position: relative; cursor: zoom-in; }
+  .media-wrap img, .media-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease, filter 0.3s ease; pointer-events: none; }
+  .card-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; z-index: 2; pointer-events: none; }
+  .overlay-icon { width: 44px; height: 44px; border: 1px solid var(--accent); border-radius: 2px; display: flex; align-items: center; justify-content: center; }
+  .overlay-icon svg { fill: var(--accent); width: 18px; height: 18px; }
+  .card-foot { padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); }
+  .card-name { font-size: 11px; font-weight: 400; letter-spacing: 0.06em; color: var(--text); opacity: 0.85; text-transform: uppercase; }
+  .card-type { font-size: 10px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; }
+  .copy-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 5px 10px; cursor: pointer; transition: all 0.15s; border-radius: 2px; white-space: nowrap; }
+  .copy-btn:hover, .copy-btn.copied { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  footer { margin: 60px 40px 40px; padding-top: 30px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  footer p { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 6px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  header { animation: fadeUp 0.5s ease both; }
+  .section-row { animation: fadeUp 0.5s 0.1s ease both; }
+  .grid { animation: fadeUp 0.5s 0.2s ease both; }
+  @media (max-width: 600px) {
+    header { padding: 40px 20px 30px; flex-direction: column; align-items: flex-start; gap: 16px; }
+    header::before { font-size: 160px; }
+    .logo-block h1 { font-size: 64px; }
+    .grid { margin: 0 20px; }
+    .section-row { padding: 30px 20px 16px; }
+    footer { margin: 40px 20px 30px; flex-direction: column; gap: 10px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <h1>CORRUPTION<span>HUB</span></h1>
+    <p>// media collection</p>
+  </div>
+  <div class="header-meta">
+    <span class="count-badge">57 items</span>
+  </div>
+</header>
+
+<!-- GIFs -->
+<div class="section-row">
+  <span class="label">GIFs</span>
+  <div class="line"></div>
+  <span class="label">04</span>
+</div>
+<div class="grid">
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1435849199945257091/1451073493449048086/UniqueChillyFiddlercrab-1.mov1-ezgif.com-speed.gif?ex=6a0c9440&is=6a0b42c0&hm=d716a0fc784bc4461913f151a459f9caba7436fe1cb6eb4feb81e039c135617c&" alt="Shots" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Shots</div><div class="card-type">gif</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1435849199945257091/1451073493449048086/UniqueChillyFiddlercrab-1.mov1-ezgif.com-speed.gif?ex=6a0c9440&is=6a0b42c0&hm=d716a0fc784bc4461913f151a459f9caba7436fe1cb6eb4feb81e039c135617c&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://i.redd.it/5tdq2y8fqpkz.gif" alt="T-Shirt Rip" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">T-Shirt Rip</div><div class="card-type">gif</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://i.redd.it/5tdq2y8fqpkz.gif')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://media.discordapp.net/attachments/943529060775133297/981695366359576596/image0.gif?ex=6a0ced0e&is=6a0b9b8e&hm=f128002cf052e40f424e555808caeb5dcb06c2d82b448e7f70f10f01c8439b6e&" alt="Dead Chat" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Dead Chat</div><div class="card-type">gif</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://media.discordapp.net/attachments/943529060775133297/981695366359576596/image0.gif?ex=6a0ced0e&is=6a0b9b8e&hm=f128002cf052e40f424e555808caeb5dcb06c2d82b448e7f70f10f01c8439b6e&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://media.discordapp.net/attachments/1001735131112951880/1006480248575103077/42D4D063-842A-4A49-8DE5-32D3330A0A33.gif?ex=6a0cc906&is=6a0b7786&hm=6df9784efce6aee8e5b4c7ba58000b53e72003b18d02dbc09744e4328683197b&" alt="Homer" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Homer</div><div class="card-type">gif</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://media.discordapp.net/attachments/1001735131112951880/1006480248575103077/42D4D063-842A-4A49-8DE5-32D3330A0A33.gif?ex=6a0cc906&is=6a0b7786&hm=6df9784efce6aee8e5b4c7ba58000b53e72003b18d02dbc09744e4328683197b&')">Copy</button></div>
+  </div>
+</div>
+
+<!-- Images -->
+<div class="section-row">
+  <span class="label">Images</span>
+  <div class="line"></div>
+  <span class="label">10</span>
+</div>
+<div class="grid">
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712171794579456/4FC72EA2-FBC8-4127-B11E-5189AC7172EC.jpg?ex=6a0cb2d9&is=6a0b6159&hm=4ddd8a35a58ddff27191cc59969ca261c40134a36e48e92ac710bf5997915b2b&" alt="Image 1" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 01</div><div class="card-type">jpg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712171794579456/4FC72EA2-FBC8-4127-B11E-5189AC7172EC.jpg?ex=6a0cb2d9&is=6a0b6159&hm=4ddd8a35a58ddff27191cc59969ca261c40134a36e48e92ac710bf5997915b2b&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712173375832174/7a089d1a27115980a86789694f100b8d.png?ex=6a0cb2da&is=6a0b615a&hm=3cab0fe49fe0524b01f5ae2f296e88dda3decdfe10e2ca98c33ce5f587eb567e&" alt="Image 2" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 02</div><div class="card-type">png</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712173375832174/7a089d1a27115980a86789694f100b8d.png?ex=6a0cb2da&is=6a0b615a&hm=3cab0fe49fe0524b01f5ae2f296e88dda3decdfe10e2ca98c33ce5f587eb567e&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712174701228122/11dbfe86fb86df2a1adb71d7db6478da.png?ex=6a0cb2da&is=6a0b615a&hm=d9db11f20fdfcc3a8ee5e714b0f747d85455d5cb9f45eca2255e089a695254a3&" alt="Image 3" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 03</div><div class="card-type">png</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712174701228122/11dbfe86fb86df2a1adb71d7db6478da.png?ex=6a0cb2da&is=6a0b615a&hm=d9db11f20fdfcc3a8ee5e714b0f747d85455d5cb9f45eca2255e089a695254a3&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712176005664818/8cd4be8f3b3aec2149f39ccbaf26fbbd.jpeg?ex=6a0cb2da&is=6a0b615a&hm=af57a191033f26cf0c594c0301a4005b96e3345e05ffcbfa694474b1a53dc527&" alt="Image 4" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 04</div><div class="card-type">jpeg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712176005664818/8cd4be8f3b3aec2149f39ccbaf26fbbd.jpeg?ex=6a0cb2da&is=6a0b615a&hm=af57a191033f26cf0c594c0301a4005b96e3345e05ffcbfa694474b1a53dc527&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712176961957969/8ba512d85f960cd6180c47f5fd726b6c.jpeg?ex=6a0cb2db&is=6a0b615b&hm=0a962d9e96017e43e2bb6587cbefcc898f97a4feef758b3aa239a6ec11840d59&" alt="Image 5" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 05</div><div class="card-type">jpeg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712176961957969/8ba512d85f960cd6180c47f5fd726b6c.jpeg?ex=6a0cb2db&is=6a0b615b&hm=0a962d9e96017e43e2bb6587cbefcc898f97a4feef758b3aa239a6ec11840d59&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712177716936785/13ef9ec3a6d52d17b1485b1cc6be787c.jpg?ex=6a0cb2db&is=6a0b615b&hm=ed3c7e6be6b032f29a6a2140877b4a9be07ffd70c39af47238cfbe4b9961db52&" alt="Image 6" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 06</div><div class="card-type">jpg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712177716936785/13ef9ec3a6d52d17b1485b1cc6be787c.jpg?ex=6a0cb2db&is=6a0b615b&hm=ed3c7e6be6b032f29a6a2140877b4a9be07ffd70c39af47238cfbe4b9961db52&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712178610319361/1f9af3c2db9ae1a36650fc9aff86a435.jpeg?ex=6a0cb2db&is=6a0b615b&hm=08a97661695be3e2ca24196330fc7150f757a9b196ab4e3d9870f4d02debbc51&" alt="Image 7" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 07</div><div class="card-type">jpeg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712178610319361/1f9af3c2db9ae1a36650fc9aff86a435.jpeg?ex=6a0cb2db&is=6a0b615b&hm=08a97661695be3e2ca24196330fc7150f757a9b196ab4e3d9870f4d02debbc51&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712179910561973/21c05df7b77ff6c724f2c4f54c31b6aa.jpeg?ex=6a0cb2db&is=6a0b615b&hm=30af818991d0d6a0e4901ac87514e93cda81f9fe135eedcc148baf65bcecc408&" alt="Image 8" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 08</div><div class="card-type">jpeg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712179910561973/21c05df7b77ff6c724f2c4f54c31b6aa.jpeg?ex=6a0cb2db&is=6a0b615b&hm=30af818991d0d6a0e4901ac87514e93cda81f9fe135eedcc148baf65bcecc408&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712180585836604/183BA5C0-818D-44E9-980C-76F3A9F4CBE3.jpg?ex=6a0cb2dc&is=6a0b615c&hm=b9981847e83db335a7126bf5f025938ec6b73ee42e991e14efbd8932576b1bf4&" alt="Image 9" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 09</div><div class="card-type">jpg</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712180585836604/183BA5C0-818D-44E9-980C-76F3A9F4CBE3.jpg?ex=6a0cb2dc&is=6a0b615c&hm=b9981847e83db335a7126bf5f025938ec6b73ee42e991e14efbd8932576b1bf4&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <img src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712183073063063/465d2700bae84957c0e9699838a3329d.png?ex=6a0cb2dc&is=6a0b615c&hm=a6f67eeb89b8f914a4986c4ce4416dd1abfc3637a5b7a600099a296edd5689bf&" alt="Image 10" loading="lazy">
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Image 10</div><div class="card-type">png</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712183073063063/465d2700bae84957c0e9699838a3329d.png?ex=6a0cb2dc&is=6a0b615c&hm=a6f67eeb89b8f914a4986c4ce4416dd1abfc3637a5b7a600099a296edd5689bf&')">Copy</button></div>
+  </div>
+</div>
+
+<!-- Videos -->
+<div class="section-row">
+  <span class="label">Videos</span>
+  <div class="line"></div>
+  <span class="label">43</span>
+</div>
+<div class="grid">
+
+  <!-- original 4 -->
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712668760887356/ankha.mp4?ex=6a0cb350&is=6a0b61d0&hm=0c6dd54e755fdaeef1e63131204eeb7feb22126917ab6ad6238f8694e5e19448&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Egyptian Cat</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712668760887356/ankha.mp4?ex=6a0cb350&is=6a0b61d0&hm=0c6dd54e755fdaeef1e63131204eeb7feb22126917ab6ad6238f8694e5e19448&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712662314233897/C85FCC8F-9FEA-4727-95E1-3A48AEACF6D8.mov?ex=6a0cb34e&is=6a0b61ce&hm=71a52ec018fb2d3d3af587188704452c095e6a896d4ed0bd81d5b9eabc5a9890&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">White Girl</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712662314233897/C85FCC8F-9FEA-4727-95E1-3A48AEACF6D8.mov?ex=6a0cb34e&is=6a0b61ce&hm=71a52ec018fb2d3d3af587188704452c095e6a896d4ed0bd81d5b9eabc5a9890&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178184478720050/2c9d8122b8ec8f5b2feffddb8367741b33500a71.mov?ex=6a0c6a9c&is=6a0b191c&hm=209c70826761c4684240a4283e789ab569a5b3eb1dfdd9434a58b1f41357cc69&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">RL</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178184478720050/2c9d8122b8ec8f5b2feffddb8367741b33500a71.mov?ex=6a0c6a9c&is=6a0b191c&hm=209c70826761c4684240a4283e789ab569a5b3eb1dfdd9434a58b1f41357cc69&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178182868119712/9qU4idRxS_5S7yHN.mov?ex=6a0c6a9b&is=6a0b191b&hm=b9d72a67a1d6129b95bcf011fb6847694e94307094e46f4db02ab3ebfd2e79c5&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">RL 2</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178182868119712/9qU4idRxS_5S7yHN.mov?ex=6a0c6a9b&is=6a0b191b&hm=b9d72a67a1d6129b95bcf011fb6847694e94307094e46f4db02ab3ebfd2e79c5&')">Copy</button></div>
+  </div>
+
+  <!-- new mp4 batch -->
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712663811608626/006779f9bca38550f07eccaee3812ca8.mp4?ex=6a0cb34f&is=6a0b61cf&hm=fa3a30b3b2e238b7cbbad40dff88846f8972b2efdac23e5fa890064a9740aef9&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 01</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712663811608626/006779f9bca38550f07eccaee3812ca8.mp4?ex=6a0cb34f&is=6a0b61cf&hm=fa3a30b3b2e238b7cbbad40dff88846f8972b2efdac23e5fa890064a9740aef9&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712665468342332/8326db842f0150e8e5ca51b45721d3dc.mp4?ex=6a0cb34f&is=6a0b61cf&hm=aa545fd4eb74f4c5cd581fa8b74687dd7b14f38e59bc1a278c07fa01ad1a4e01&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 02</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712665468342332/8326db842f0150e8e5ca51b45721d3dc.mp4?ex=6a0cb34f&is=6a0b61cf&hm=aa545fd4eb74f4c5cd581fa8b74687dd7b14f38e59bc1a278c07fa01ad1a4e01&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712666034589736/058541421e0c02930af8db4e5784c9cd.mp4?ex=6a0cb34f&is=6a0b61cf&hm=b3784aefb091c292ff7b13ff9902f3b0aa37fd9169304917f80a9a1cf042580e&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 03</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712666034589736/058541421e0c02930af8db4e5784c9cd.mp4?ex=6a0cb34f&is=6a0b61cf&hm=b3784aefb091c292ff7b13ff9902f3b0aa37fd9169304917f80a9a1cf042580e&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712666646950009/14f4eb102f5286f052cf257d4a264d76.mp4?ex=6a0cb34f&is=6a0b61cf&hm=ecd9643b4ba625c226f175e5e3b91f87e2dc72b06700f40a58c33dd96635169d&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 04</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712666646950009/14f4eb102f5286f052cf257d4a264d76.mp4?ex=6a0cb34f&is=6a0b61cf&hm=ecd9643b4ba625c226f175e5e3b91f87e2dc72b06700f40a58c33dd96635169d&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712667221577849/83d3706ba6294dbc99c99d890a2afb11.mp4?ex=6a0cb350&is=6a0b61d0&hm=c6465fb02ada0ade9e8f2da73f8d227f9fe1293afd5d1cc8b1f33124d3bb37ae&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 05</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712667221577849/83d3706ba6294dbc99c99d890a2afb11.mp4?ex=6a0cb350&is=6a0b61d0&hm=c6465fb02ada0ade9e8f2da73f8d227f9fe1293afd5d1cc8b1f33124d3bb37ae&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712668001710241/b919a249efe19b58c1a8dce2d7ff736e.mp4?ex=6a0cb350&is=6a0b61d0&hm=dff9cdc7c8b4c5af5d71f1f8527c466f4edd4758eaad923f0c6bf147e7452e3f&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 06</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712668001710241/b919a249efe19b58c1a8dce2d7ff736e.mp4?ex=6a0cb350&is=6a0b61d0&hm=dff9cdc7c8b4c5af5d71f1f8527c466f4edd4758eaad923f0c6bf147e7452e3f&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712669440348211/f2343e1479b3f4e741c0fab28d901dec.mp4?ex=6a0cb350&is=6a0b61d0&hm=bd5f52ed889bbb4fe31893c7e4ff28fae7f2121210632d9ac6b91973e685f350&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 07</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712669440348211/f2343e1479b3f4e741c0fab28d901dec.mp4?ex=6a0cb350&is=6a0b61d0&hm=bd5f52ed889bbb4fe31893c7e4ff28fae7f2121210632d9ac6b91973e685f350&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1169712670409248839/fe0337b932f63234702bc3e9d73ac293.mp4?ex=6a0cb350&is=6a0b61d0&hm=9b51348924f6a73474be3e4c33107fca55a46127bce01bfc9049d5bf9aff159a&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 08</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1169712670409248839/fe0337b932f63234702bc3e9d73ac293.mp4?ex=6a0cb350&is=6a0b61d0&hm=9b51348924f6a73474be3e4c33107fca55a46127bce01bfc9049d5bf9aff159a&')">Copy</button></div>
+  </div>
+
+  <!-- mov/webm batch -->
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178183274959009/0_5.mov?ex=6a0c6a9b&is=6a0b191b&hm=51e98907be63ce0abcf8807d4e47734826c8efa37f7c55833838eb553f3ee562&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 09</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178183274959009/0_5.mov?ex=6a0c6a9b&is=6a0b191b&hm=51e98907be63ce0abcf8807d4e47734826c8efa37f7c55833838eb553f3ee562&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178184923328532/3C72A132-5D4B-4D22-A54E-4D7FEE2C9B72.mov?ex=6a0c6a9c&is=6a0b191c&hm=a4b525b7b535e23e3adbc681496de58459ca3cf9f9e18ac7c0d53bf4d308c8e3&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 10</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178184923328532/3C72A132-5D4B-4D22-A54E-4D7FEE2C9B72.mov?ex=6a0c6a9c&is=6a0b191c&hm=a4b525b7b535e23e3adbc681496de58459ca3cf9f9e18ac7c0d53bf4d308c8e3&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178185367916666/4f76c93064a14fbcb10b08093dc25f3a.mov?ex=6a0c6a9c&is=6a0b191c&hm=9f24345fa7d25464bee98e16a1af935aa9c87dbf555d7860d89b1371b765c5e2&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 11</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178185367916666/4f76c93064a14fbcb10b08093dc25f3a.mov?ex=6a0c6a9c&is=6a0b191c&hm=9f24345fa7d25464bee98e16a1af935aa9c87dbf555d7860d89b1371b765c5e2&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178185703456888/5C80DE23-778E-4441-A49A-BD064D5951F1.mov?ex=6a0c6a9c&is=6a0b191c&hm=983145a122c74547178523bcec05de05d14aa1dec5155fc6921af6269d824098&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 12</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178185703456888/5C80DE23-778E-4441-A49A-BD064D5951F1.mov?ex=6a0c6a9c&is=6a0b191c&hm=983145a122c74547178523bcec05de05d14aa1dec5155fc6921af6269d824098&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178186026430494/06bcb9af0c614f82a318e70df162343f.mov?ex=6a0c6a9c&is=6a0b191c&hm=b786e5df8ffa309f3398eda7077973a7065225bfb7b47aea19aed68157beac47&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 13</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178186026430494/06bcb9af0c614f82a318e70df162343f.mov?ex=6a0c6a9c&is=6a0b191c&hm=b786e5df8ffa309f3398eda7077973a7065225bfb7b47aea19aed68157beac47&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178186429075506/07d0d1cddcd676575bad8c16daf00cf7.webm?ex=6a0c6a9c&is=6a0b191c&hm=03f9afc7a964c03a05451d8f58a8b0361baa45e73c65cd2b61a2addecfc1c437&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 14</div><div class="card-type">webm</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178186429075506/07d0d1cddcd676575bad8c16daf00cf7.webm?ex=6a0c6a9c&is=6a0b191c&hm=03f9afc7a964c03a05451d8f58a8b0361baa45e73c65cd2b61a2addecfc1c437&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178186827530290/7d83204ae05abcc000965f8f01b5a65a4c3357d2_1.mov?ex=6a0c6a9c&is=6a0b191c&hm=a8be7ed895d530d0b6905d89e4aac4d4b98efd964d253f4bb602f522705af0f5&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 15</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178186827530290/7d83204ae05abcc000965f8f01b5a65a4c3357d2_1.mov?ex=6a0c6a9c&is=6a0b191c&hm=a8be7ed895d530d0b6905d89e4aac4d4b98efd964d253f4bb602f522705af0f5&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178187238584372/8EABA476-CE4F-4377-9690-3E8F0A6D79D3.mov?ex=6a0c6a9c&is=6a0b191c&hm=0769afea6b2981f4cd7aa94b63b548734f325c63416a3257f45236490c8932e2&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 16</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178187238584372/8EABA476-CE4F-4377-9690-3E8F0A6D79D3.mov?ex=6a0c6a9c&is=6a0b191c&hm=0769afea6b2981f4cd7aa94b63b548734f325c63416a3257f45236490c8932e2&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178245329698846/511E1E11-CED7-448B-A979-ADB23F26960D.mov?ex=6a0c6aaa&is=6a0b192a&hm=150d199ce952e017ba9a4b5e0156b5431e3ec4ea063f8e6c33a245a89354e0c5&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 17</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178245329698846/511E1E11-CED7-448B-A979-ADB23F26960D.mov?ex=6a0c6aaa&is=6a0b192a&hm=150d199ce952e017ba9a4b5e0156b5431e3ec4ea063f8e6c33a245a89354e0c5&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178245782671360/10YY4m59c4WOYZ7d.mp4?ex=6a0c6aaa&is=6a0b192a&hm=8f0547427510f0abbdf45a3de6221ad7fde3168ac18599312a0f850c09473153&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 18</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178245782671360/10YY4m59c4WOYZ7d.mp4?ex=6a0c6aaa&is=6a0b192a&hm=8f0547427510f0abbdf45a3de6221ad7fde3168ac18599312a0f850c09473153&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178246457962656/17b290ec68694bd3888055242433c6e0.mov?ex=6a0c6aaa&is=6a0b192a&hm=81c2d0b42e0e2064a259cc15e2e691047481d15752baf4a2468648f414c41643&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 19</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178246457962656/17b290ec68694bd3888055242433c6e0.mov?ex=6a0c6aaa&is=6a0b192a&hm=81c2d0b42e0e2064a259cc15e2e691047481d15752baf4a2468648f414c41643&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178246978060318/18a9502a548eff339d0bca9113788991.0.mov?ex=6a0c6aaa&is=6a0b192a&hm=10fc324cf80262b3ae6c1b5a0dbd4cec6afd0f845ff74546f24d6891a1e78619&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 20</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178246978060318/18a9502a548eff339d0bca9113788991.0.mov?ex=6a0c6aaa&is=6a0b192a&hm=10fc324cf80262b3ae6c1b5a0dbd4cec6afd0f845ff74546f24d6891a1e78619&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178247410061342/34c3250f38c34581922e6e132f7a1e0e.mov?ex=6a0c6aab&is=6a0b192b&hm=ed52c7e322ca38871cd895bea010d87798c879f80ce263c4067eb43c6306c914&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 21</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178247410061342/34c3250f38c34581922e6e132f7a1e0e.mov?ex=6a0c6aab&is=6a0b192b&hm=ed52c7e322ca38871cd895bea010d87798c879f80ce263c4067eb43c6306c914&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178248265707541/41Qrz6yOq4DCEGef.mov?ex=6a0c6aab&is=6a0b192b&hm=de9d2569186fe1d69e328735131ef0182f37b31ced24f588f1a6db507bf6134c&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 22</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178248265707541/41Qrz6yOq4DCEGef.mov?ex=6a0c6aab&is=6a0b192b&hm=de9d2569186fe1d69e328735131ef0182f37b31ced24f588f1a6db507bf6134c&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178248773222532/44EA2047-3B5E-4FD7-9AFB-AC7DDCF4C235.mov?ex=6a0c6aab&is=6a0b192b&hm=23953ef05b543aa2331d60f3f88838d21565bde9b9921f5f60f008cc6f4b163b&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 23</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178248773222532/44EA2047-3B5E-4FD7-9AFB-AC7DDCF4C235.mov?ex=6a0c6aab&is=6a0b192b&hm=23953ef05b543aa2331d60f3f88838d21565bde9b9921f5f60f008cc6f4b163b&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178249175863377/068a00_10240284.mp4?ex=6a0c6aab&is=6a0b192b&hm=7d6ce725789797de970e21e4caaadd287e6e3a6edcab0196e723bc3b23120284&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 24</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178249175863377/068a00_10240284.mp4?ex=6a0c6aab&is=6a0b192b&hm=7d6ce725789797de970e21e4caaadd287e6e3a6edcab0196e723bc3b23120284&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178249754685500/69aucE9rJcxf4VsN.mov?ex=6a0c6aab&is=6a0b192b&hm=3fa4405e9d6996fa1db0d2ee71264047765310d67e3294aefd88d1b9f841f9ac&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 25</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178249754685500/69aucE9rJcxf4VsN.mov?ex=6a0c6aab&is=6a0b192b&hm=3fa4405e9d6996fa1db0d2ee71264047765310d67e3294aefd88d1b9f841f9ac&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1170178250245423248/443CA907-0E3A-4518-A1DF-5903CBEA9D57.mov?ex=6a0c6aab&is=6a0b192b&hm=380947babdcb2e05743c7da9b4a7eab239931f9cf928c3980e33eb47c7698709&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 26</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1170178250245423248/443CA907-0E3A-4518-A1DF-5903CBEA9D57.mov?ex=6a0c6aab&is=6a0b192b&hm=380947babdcb2e05743c7da9b4a7eab239931f9cf928c3980e33eb47c7698709&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174392826323275826/e9abce96cdfdfac471e525a282e6c4b6.mp4?ex=6a0c968c&is=6a0b450c&hm=36bf73567e18fbf0ede71b0c5125a4e86358d997ce432cd341a2f66453b54c52&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 27</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174392826323275826/e9abce96cdfdfac471e525a282e6c4b6.mp4?ex=6a0c968c&is=6a0b450c&hm=36bf73567e18fbf0ede71b0c5125a4e86358d997ce432cd341a2f66453b54c52&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174392827304755361/RDT_20231030_122438.mp4?ex=6a0c968d&is=6a0b450d&hm=e9025bff33d3f766d8c6d5ae99db55841f3875a9bb0ee7e8f9751e8e912874a4&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 28</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174392827304755361/RDT_20231030_122438.mp4?ex=6a0c968d&is=6a0b450d&hm=e9025bff33d3f766d8c6d5ae99db55841f3875a9bb0ee7e8f9751e8e912874a4&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174392828193951774/RDT_20231030_112150.mp4?ex=6a0c968d&is=6a0b450d&hm=a3b4504f6a7db14b4984ab517c7f10914a65a17d1fbd3c816c4088a6544e85e7&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 29</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174392828193951774/RDT_20231030_112150.mp4?ex=6a0c968d&is=6a0b450d&hm=a3b4504f6a7db14b4984ab517c7f10914a65a17d1fbd3c816c4088a6544e85e7&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521969551613972/JpEOnaB.mp4?ex=6a0c6613&is=6a0b1493&hm=406ab80304f16acfab3815d9dd4dc85c87fa81a9d86022660117158749287be7&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 30</div><div class="card-type">mp4</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521969551613972/JpEOnaB.mp4?ex=6a0c6613&is=6a0b1493&hm=406ab80304f16acfab3815d9dd4dc85c87fa81a9d86022660117158749287be7&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521969971040327/heaharh.mov?ex=6a0c6613&is=6a0b1493&hm=056382828bda265e99b3b9ed2952b659290347f1b216b64c96f42fe8359fbb16&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Video 31</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521969971040327/heaharh.mov?ex=6a0c6613&is=6a0b1493&hm=056382828bda265e99b3b9ed2952b659290347f1b216b64c96f42fe8359fbb16&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521971946553405/IMG_1693.mov?ex=6a0c6613&is=6a0b1493&hm=1ef2e9faaa22226b0d6ec98d9c740bbc036d2bdface2197f3458bbda75757c87&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">IMG 1693</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521971946553405/IMG_1693.mov?ex=6a0c6613&is=6a0b1493&hm=1ef2e9faaa22226b0d6ec98d9c740bbc036d2bdface2197f3458bbda75757c87&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521972365991956/IMG_2888.MOV?ex=6a0c6613&is=6a0b1493&hm=78e4251588910035c02a957aac5ecdaa06acd65b260e43929e2777384c0dd43b&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">IMG 2888</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521972365991956/IMG_2888.MOV?ex=6a0c6613&is=6a0b1493&hm=78e4251588910035c02a957aac5ecdaa06acd65b260e43929e2777384c0dd43b&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521972768641105/IMG_4620.mov?ex=6a0c6613&is=6a0b1493&hm=bcec28ed2e88968ccfd8c6e95a96a26c78daf5f35a6de6220ddf0ea32e5d1326&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">IMG 4620</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521972768641105/IMG_4620.mov?ex=6a0c6613&is=6a0b1493&hm=bcec28ed2e88968ccfd8c6e95a96a26c78daf5f35a6de6220ddf0ea32e5d1326&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521973188067348/IMG_6221.mov?ex=6a0c6613&is=6a0b1493&hm=2e6c6c3f42b9e99d00766d2959381d27fc12a88c6c24112537d00ea7de381c52&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">IMG 6221</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521973188067348/IMG_6221.mov?ex=6a0c6613&is=6a0b1493&hm=2e6c6c3f42b9e99d00766d2959381d27fc12a88c6c24112537d00ea7de381c52&')">Copy</button></div>
+  </div>
+  <div class="card">
+    <div class="media-wrap">
+      <video src="https://cdn.discordapp.com/attachments/1105982521822433443/1174521973703974952/InfatuatedDeterminedRingtailedlemur_1.mov?ex=6a0c6614&is=6a0b1494&hm=a63a1001143202d7563fc34d6505da05956362e342e32821fe14f6c1c3048de8&" muted loop preload="none"></video>
+      <div class="card-overlay"><div class="overlay-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+    </div>
+    <div class="card-foot"><div><div class="card-name">Lemur</div><div class="card-type">mov</div></div>
+      <button class="copy-btn" onclick="copyLink(this,'https://cdn.discordapp.com/attachments/1105982521822433443/1174521973703974952/InfatuatedDeterminedRingtailedlemur_1.mov?ex=6a0c6614&is=6a0b1494&hm=a63a1001143202d7563fc34d6505da05956362e342e32821fe14f6c1c3048de8&')">Copy</button></div>
+  </div>
+
+</div>
+
+<footer>
+  <p><span class="dot"></span>Live — 57 items</p>
+  <p>Corruption Hub // 2026</p>
+</footer>
+
+<script>
+  function openFullscreen(el) {
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+  }
+
+  document.querySelectorAll('.media-wrap').forEach(wrap => {
+    wrap.addEventListener('click', () => {
+      const video = wrap.querySelector('video');
+      const img = wrap.querySelector('img');
+      if (video) openFullscreen(video);
+      else if (img) openFullscreen(img);
+    });
+  });
+
+  function copyLink(btn, link) {
+    navigator.clipboard.writeText(link).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  document.querySelectorAll('.card').forEach(card => {
+    const video = card.querySelector('video');
+    if (!video) return;
+    card.addEventListener('mouseenter', () => video.play());
+    card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+  });
+</script>
+</body>
+</html>
+HTMLEOF
